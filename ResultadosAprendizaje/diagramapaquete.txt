@@ -1,0 +1,57 @@
+@startuml
+title Diagrama de Paquetes - HU-01: Registro de Usuario
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam linetype ortho
+
+package "🖥️ Presentación (UI)" {
+  [Formulario de Registro]
+  [Gestor de Mensajes]
+}
+
+package "⚙️ Negocio (Servicios)" {
+  [ServicioRegistroUsuario]
+  [MotorDeValidaciones]
+}
+
+package "📦 Dominio (Modelo)" {
+  [EntidadUsuario]
+  [EntidadPerfil]
+}
+
+package "💾 Persistencia (Datos)" {
+  [RepositorioUsuario]
+  [RepositorioPerfil]
+  [BaseDeDatos]
+}
+
+package "🔧 Utilidades (Validadores)" {
+  [ValidadorDocumento]
+  [ValidadorTelefono]
+  [ValidadorCorreo]
+  [ValidadorContraseña]
+}
+
+' === DEPENDENCIAS ENTRE PAQUETES ===
+[Formulario de Registro] --> [ServicioRegistroUsuario] : envía payload
+[Gestor de Mensajes] --> [Formulario de Registro] : muestra éxito/error
+
+[ServicioRegistroUsuario] --> [MotorDeValidaciones] : delega validación
+[MotorDeValidaciones] ..> [ValidadorDocumento] : <<use>>
+[MotorDeValidaciones] ..> [ValidadorTelefono] : <<use>>
+[MotorDeValidaciones] ..> [ValidadorCorreo] : <<use>>
+[MotorDeValidaciones] ..> [ValidadorContraseña] : <<use>>
+
+[ServicioRegistroUsuario] --> [RepositorioUsuario] : persiste usuario
+[RepositorioUsuario] --> [BaseDeDatos] : ejecuta INSERT usuario
+[BaseDeDatos] --> [RepositorioPerfil] : <<trigger>> inserta perfil
+[RepositorioUsuario] .right.> [EntidadUsuario] : mapea
+[RepositorioPerfil] .left.> [EntidadPerfil] : mapea
+
+note bottom of [BaseDeDatos]
+  🗄️ Esquema Relacional:
+  • tabla usuario (PK auto, unique doc/tel/correo)
+  • tabla perfil (se llena automáticamente vía trigger)
+  • restricciones de tipo, longitud y formato
+end note
+@enduml

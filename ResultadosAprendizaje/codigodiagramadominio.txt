@@ -1,0 +1,127 @@
+@startuml MuebleriaDominio
+
+' Configuración general
+skinparam class {
+    BackgroundColor White
+    BorderColor Black
+    AttributeBackgroundColor LightYellow
+    MethodBackgroundColor LightBlue
+}
+
+skinparam linetype ortho
+
+' ========================
+' CLASES DEL DOMINIO
+' ========================
+
+class Cliente {
+    + ID_Cliente : Integer <<PK>>
+    --
+    + Nombre : String
+    + Apellido : String
+    + Direccion : String
+    + Telefono : String
+    + Email : String
+}
+
+class Categoria {
+    + ID_Categoria : Integer <<PK>>
+    --
+    + Nombre_Categoria : String
+}
+
+class Producto {
+    + ID_Producto : Integer <<PK>>
+    --
+    + Nombre : String
+    + Descripcion : String
+    + Precio : Decimal
+    + ID_Categoria : Integer <<FK>>
+    + ID_Inventario : Integer <<FK>>
+}
+
+class Inventario {
+    + ID_Inventario : Integer <<PK>>
+    --
+    + StockActual : Integer
+    + Ubicacion_Almacen : String
+}
+
+class Venta {
+    + ID_Venta : Integer <<PK>>
+    --
+    + Fecha : Date
+    + Total : Decimal
+    + ID_Cliente : Integer <<FK>>
+    + ID_Pago : Integer <<FK>>
+}
+
+class DetalleVenta {
+    + ID_Detalle : Integer <<PK>>
+    --
+    + Cantidad : Integer
+    + PrecioUnitario : Decimal
+    + ID_Venta : Integer <<FK>>
+    + ID_Producto : Integer <<FK>>
+}
+
+class Pago {
+    + ID_Pago : Integer <<PK>>
+    --
+    + Monto : Decimal
+    + MetodoPago : String
+    + Fecha_Pago : Date
+    + ID_Venta : Integer <<FK>>
+}
+
+class Cuota {
+    + ID_Cuota : Integer <<PK>>
+    --
+    + Monto : Decimal
+    + FechaVencimiento : Date
+    + Estado : String
+    + ID_Pago : Integer <<FK>>
+}
+
+' ========================
+' RELACIONES Y CARDINALIDADES
+' ========================
+
+' Cliente realiza Ventas
+Cliente "1" -- "0..*" Venta : realiza >
+
+' Venta tiene Detalles
+Venta "1" *-- "1..*" DetalleVenta : tiene >
+
+' DetalleVenta se refiere a Producto
+DetalleVenta "1..*" --> "1" Producto : se refiere a >
+
+' Producto pertenece a Categoria
+Producto "*" --> "1" Categoria : pertenece a >
+
+' Producto tiene Inventario (Composición)
+Producto "1" *-- "1" Inventario : tiene >
+
+' Venta se liquida con Pago
+Venta "1" --> "1" Pago : se liquida con >
+
+' Pago se divide en Cuotas (si es crédito)
+Pago "1" *-- "0..*" Cuota : se divide en >
+
+note top of Cliente
+    Un cliente puede realizar
+    múltiples ventas a lo largo
+    del tiempo.
+end note
+
+note right of Producto
+    Cada producto pertenece
+    a una sola categoría.
+end note
+
+note bottom of Pago
+    Si es venta al contado: 1 pago.
+    Si es crédito: se divide en cuotas.
+end note
+
+@enduml

@@ -1,0 +1,55 @@
+@startuml
+title Diagrama de Dominio - HU-01: Registro de Usuario y Perfil
+skinparam classAttributeIconSize 0
+hide circle
+
+class Usuario {
+  - idUsuario : Integer {PK, AutoIncrement}
+  - documento : String(10) {Unique}
+  - nombres : String(100)
+  - telefono : String(10) {Unique}
+  - correo : String(200) {Unique}
+  - contrasena : String
+  + rol : String = "Cliente"
+  + estado : String = "Activo"
+  + fechaCreacion : DateTime = NOW()
+  + intentosFallidos : Integer = 0
+}
+
+class Perfil {
+  - idPerfil : Integer {PK, NotNull}
+  - documento : String(10) {Unique, NotNull}
+  - nombres : String(100) {NotNull}
+  - telefono : String(10) {Unique, NotNull}
+  - correo : String(200) {NotNull}
+  - pregunta1 : String(255)
+  - pregunta2 : String(255)
+  - pregunta3 : String(255)
+  - respuesta1 : String(255)
+  - respuesta2 : String(255)
+  - respuesta3 : String(255)
+  - direccion : String(255)
+  - fechaExpedicion : String(255)
+}
+
+Usuario "1" -- "1" Perfil : <<Trigger al crear>>
+
+note right of Usuario
+  📋 Validaciones de Negocio (Criterios 3-10):
+  • documento: 8-10 dígitos numéricos
+  • nombres: 3-100 caracteres, solo letras
+  • telefono: exactamente 10 dígitos numéricos
+  • correo: 8-200 chars, formato email válido
+  • contrasena: ≥8 chars, 1 Mayús + 1 Minús + 1 Núm + 1 Especial
+  • Unicidad estricta en: documento, teléfono y correo.
+  • Si se detecta duplicado → Mensaje de recuperación de cuenta (Criterio 13).
+end note
+
+note bottom of Perfil
+  ⚙️ Población Automática (Criterio 14):
+  Esta entidad se instancia automáticamente vía Trigger 
+  tras la creación exitosa de un Usuario. 
+  Los campos de preguntas/respuestas y configuración 
+  inician como NULL para ser completados posteriormente.
+end note
+@enduml
